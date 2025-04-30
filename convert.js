@@ -40,6 +40,25 @@ export const convertScrapboxToObsidian = (
   }
 };
 
+/** メタデータを生成する
+ *
+ * @param {string} title
+ * @param {number} created
+ * @param {number} updated
+ * @return {string}
+ */
+const generateMetaData = (title, created, updated) => {
+  return [
+    "---",
+    `title: ${title}`,
+    `created_at: ${new Date(created * 1000).toISOString()}`,
+    `updated_at: ${new Date(updated * 1000).toISOString()}`,
+    "---",
+    "",
+  ].join("\n");
+};
+
+
 /** Table記法の変換
  *
  * @param {Table} table
