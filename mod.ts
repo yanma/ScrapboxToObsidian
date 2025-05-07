@@ -2,8 +2,6 @@ import { convertScrapboxToObsidian } from "./convert.js";
 import { parse } from "https://esm.sh/@progfay/scrapbox-parser@8.1.0";
 import { ensureDir } from "https://deno.land/std@0.170.0/fs/mod.ts";
 
-await ensureDir("./obsidianPages");
-
 // ファイル名を安全な形式に変換する関数
 const sanitizeFileName = (title) => {
   // 特殊文字とスペースをアンダースコアに変換
@@ -32,7 +30,12 @@ const generateMetaData = (title, created, updated) => {
 
 const filePath = Deno.args[0];
 const projectName = Deno.args[1] ?? "PROJECT_NAME";
+const outputDir = Deno.args[2] ?? "obsidianPages";
+
 try {
+  // 出力ディレクトリのパスを正規化
+  const normalizedOutputDir = outputDir.startsWith("./") ? outputDir : `./${outputDir}`;
+  await ensureDir(normalizedOutputDir);
   const projectFile = await Deno.readTextFile(`./${filePath}`);
   const projectJson = JSON.parse(projectFile);
   const pages = projectJson["pages"];
@@ -49,7 +52,7 @@ try {
     
     // ファイル名を安全な形式に変換
     const safeFileName = sanitizeFileName(page["title"]);
-    const obsidianPagePath = `./obsidianPages/${safeFileName}.md`;
+    const obsidianPagePath = `${normalizedOutputDir}/${safeFileName}.md`;
     
     await Deno.writeTextFile(obsidianPagePath, obsidianPageMetadata + obsidianPageContent);
     await Deno.utime(obsidianPagePath, new Date(), page["updated"]);

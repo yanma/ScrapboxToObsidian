@@ -24,15 +24,17 @@ curl -fsSL https://deno.land/x/install/install.sh | sh
 
 ## 使用方法
 ```bash
-deno run --allow-run --allow-read --allow-write mod.ts SCRAPBOX_EXPORTED_FILE.json PROJECT_NAME
+deno run --allow-run --allow-read --allow-write mod.ts SCRAPBOX_EXPORTED_FILE.json PROJECT_NAME [OUTPUT_DIR]
 ```
 
 ### パラメータ
 - `SCRAPBOX_EXPORTED_FILE.json`: ScrapboxからエクスポートしたJSONファイルのパス
 - `PROJECT_NAME`: Scrapboxのプロジェクト名（アイコンの取得に使用）
+- `OUTPUT_DIR`: （オプション）出力ディレクトリ名。指定しない場合は "obsidianPages" が使用されます
+  - パスは実行時のカレントディレクトリからの相対パスとして解釈されます
 
 ### 出力
-- カレントディレクトリに`output`フォルダが作成され、その中にMarkdownファイルが生成されます
+- カレントディレクトリに`OUTPUT_DIR`（または"obsidianPages"）フォルダが作成され、その中にMarkdownファイルが生成されます
 - 各ページは個別のMarkdownファイルとして保存されます
 - 画像ファイルは`output/images`ディレクトリに保存されます
 
