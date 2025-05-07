@@ -4,6 +4,22 @@ import { ensureDir } from "https://deno.land/std@0.170.0/fs/mod.ts";
 
 await ensureDir("./obsidianPages");
 
+// ファイル名を安全な形式に変換する関数
+const sanitizeFileName = (title) => {
+  // 特殊文字とスペースをアンダースコアに変換
+  let sanitized = title
+    .replace(/[\\/:*?"<>|]/g, "_") // ファイルシステムで使用できない文字をアンダースコアに
+    .replace(/\s+/g, "_");         // スペースをアンダースコアに
+
+  // 長さを制限（拡張子を含む）
+  const maxLength = 100;
+  if (sanitized.length > maxLength - 3) { // .mdの3文字を考慮
+    sanitized = sanitized.substring(0, maxLength - 3);
+  }
+
+  return sanitized;
+};
+
 const generateMetaData = (title, created, updated) => {
   return [
     "---",
@@ -30,9 +46,11 @@ try {
     const obsidianPageContent = blocks.map((block) =>
       convertScrapboxToObsidian(block, 0, projectName)
     ).join("\n");
-    const obsidianPagePath = `./obsidianPages/${
-      page["title"].replace(/\//gi, "-")
-    }.md`;
+    
+    // ファイル名を安全な形式に変換
+    const safeFileName = sanitizeFileName(page["title"]);
+    const obsidianPagePath = `./obsidianPages/${safeFileName}.md`;
+    
     await Deno.writeTextFile(obsidianPagePath, obsidianPageMetadata + obsidianPageContent);
     await Deno.utime(obsidianPagePath, new Date(), page["updated"]);
   }
