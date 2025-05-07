@@ -31,6 +31,7 @@ const generateMetaData = (title, created, updated) => {
 const filePath = Deno.args[0];
 const projectName = Deno.args[1] ?? "PROJECT_NAME";
 const outputDir = Deno.args[2] ?? "obsidianPages";
+const forceOverwrite = Deno.args.includes("-f");
 
 try {
   // 出力ディレクトリのパスを正規化
@@ -54,8 +55,24 @@ try {
     const safeFileName = sanitizeFileName(page["title"]);
     const obsidianPagePath = `${normalizedOutputDir}/${safeFileName}.md`;
     
-    await Deno.writeTextFile(obsidianPagePath, obsidianPageMetadata + obsidianPageContent);
-    await Deno.utime(obsidianPagePath, new Date(), page["updated"]);
+    // ファイルの存在確認と更新日時のチェック
+    let shouldWrite = true;
+    try {
+      const fileInfo = await Deno.stat(obsidianPagePath);
+      if (!forceOverwrite && fileInfo.mtime && fileInfo.mtime.getTime() >= page["updated"] * 1000) {
+        shouldWrite = false;
+      }
+    } catch (error) {
+      if (!(error instanceof Deno.errors.NotFound)) {
+        throw error;
+      }
+    }
+
+    if (shouldWrite) {
+      await Deno.writeTextFile(obsidianPagePath, obsidianPageMetadata + obsidianPageContent);
+      await Deno.utime(obsidianPagePath, new Date(), page["updated"]);
+      console.log(`Written: ${safeFileName}.md`);
+    }
   }
 } catch (error) {
   if (error instanceof Deno.errors.NotFound) {
